@@ -1,5 +1,3 @@
 /target
 Cargo.lock
-/gen
-src/invoicesrpc.rs
-src/lnrpc.rs
+/src/gen

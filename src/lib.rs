@@ -79,12 +79,11 @@ use tonic_openssl::ALPN_H2_WIRE;
 use tower::Service;
 
 pub mod lnrpc {
-    include!("lnrpc.rs");
+    include!("gen/lnrpc.rs");
 }
 
 pub mod invoicesrpc {
-    include!("invoicesrpc.rs");
-    // tonic::include_proto!("invoicesrpc");
+    include!("gen/invoicesrpc.rs");
 }
 
 /// [`tonic::Status`] is re-exported as `Error` for convenience.
