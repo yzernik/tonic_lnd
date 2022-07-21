@@ -38,7 +38,7 @@ async fn main() {
             ..Default::default()
         })
         .await
-        .expect("failed to get info");
+        .expect("failed to add hold invoice");
 
     // We only print it here, note that in real-life code you may want to call `.into_inner()` on
     // the response to get the message.
