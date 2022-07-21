@@ -1,36 +1,33 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 fn main() -> std::io::Result<()> {
     println!("cargo:rerun-if-env-changed=LND_REPO_DIR");
     let lnd_rpc_dir_owned;
-    let dir_path = match std::env::var_os("LND_REPO_DIR") {
+    let dir = match std::env::var_os("LND_REPO_DIR") {
         Some(lnd_repo_path) => {
             let mut lnd_rpc_dir = PathBuf::from(lnd_repo_path);
             lnd_rpc_dir.push("lnrpc");
             lnd_rpc_dir_owned = lnd_rpc_dir;
-            &*lnd_rpc_dir_owned
+            lnd_rpc_dir_owned.display().to_string()
         }
-        None => Path::new("vendor"),
+        None => "vendor".to_string(),
     };
-    let dir = dir_path.display().to_string();
 
     let protos = vec![
-        // "autopilot.proto",
-        // "chainnotifier.proto",
-        // "dev.proto",
-        "invoices.proto",
+        "autopilotrpc/autopilot.proto",
+        "chainrpc/chainnotifier.proto",
+        "devrpc/dev.proto",
+        "invoicesrpc/invoices.proto",
         "lightning.proto",
-        // "lncli.proto",
-        // "neutrino.proto",
-        // "peers.proto",
-        // "router.proto",
-        // "signer.proto",
-        // "stateservice.proto",
-        // "verrpc.proto",
-        // "walletkit.proto",
-        // "walletunlocker.proto",
-        // "watchtower.proto",
-        // "wtclient.proto",
+        "lnclipb/lncli.proto",
+        "neutrinorpc/neutrino.proto",
+        "peersrpc/peers.proto",
+        "routerrpc/router.proto",
+        "signrpc/signer.proto",
+        "verrpc/verrpc.proto",
+        "walletrpc/walletkit.proto",
+        "watchtowerrpc/watchtower.proto",
+        "wtclientrpc/wtclient.proto",
     ];
 
     let proto_paths: Vec<_> = protos
@@ -47,25 +44,5 @@ fn main() -> std::io::Result<()> {
         .build_server(false)
         .out_dir("src/gen")
         .compile(&proto_paths, &[dir])?;
-
-    // for proto_file in [
-    //     "autopilot.proto",
-    //     "chainnotifier.proto",
-    //     "dev.proto",
-    //     "invoices.proto",
-    //     "lightning.proto",
-    //     "lncli.proto",
-    //     "neutrino.proto",
-    //     "peers.proto",
-    //     "router.proto",
-    //     "signer.proto",
-    //     "stateservice.proto",
-    //     "verrpc.proto",
-    //     "walletkit.proto",
-    //     "walletunlocker.proto",
-    //     "watchtower.proto",
-    //     "wtclient.proto",
-    // ] {
-    // }
     Ok(())
 }
