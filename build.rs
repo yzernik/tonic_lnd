@@ -13,11 +13,33 @@ fn main() -> std::io::Result<()> {
         None => Path::new("vendor"),
     };
 
-    let lnd_rpc_proto_file = dir.join("lightning.proto");
-    println!("cargo:rerun-if-changed={}", lnd_rpc_proto_file.display());
+    for proto_file in [
+        "lightning.proto",
+        "autopilot.proto",
+        "chainnotifier.proto",
+        "dev.proto",
+        "invoices.proto",
+        "lightning.proto",
+        "lncli.proto",
+        "neutrino.proto",
+        "peers.proto",
+        "router.proto",
+        "signer.proto",
+        "stateservice.proto",
+        "verrpc.proto",
+        "walletkit.proto",
+        "walletunlocker.proto",
+        "watchtower.proto",
+        "wtclient.proto",
+    ] {
+        let proto_file_path = dir.join(proto_file);
+        println!("cargo:rerun-if-changed={}", proto_file_path.display());
 
-    tonic_build::configure()
-        .build_client(true)
-        .build_server(false)
-        .compile(&[&*lnd_rpc_proto_file], &[dir])
+        tonic_build::configure()
+            .build_client(true)
+            .build_server(false)
+            .compile(&[&*proto_file_path], &[dir])
+            .ok();
+    }
+    Ok(())
 }
