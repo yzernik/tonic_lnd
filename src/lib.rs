@@ -90,7 +90,7 @@ pub mod invoicesrpc {
 pub type LndClientError = tonic::Status;
 
 // /// This is a convenience type which you most likely want to use instead of raw client.
-pub type LndClient = crate::lnrpc::lightning_client::LightningClient<
+pub type LndLightningClient = crate::lnrpc::lightning_client::LightningClient<
     tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
 >;
 
@@ -134,25 +134,48 @@ async fn load_macaroon(
     Ok(hex::encode(&macaroon))
 }
 
-pub async fn connect(
+async fn get_channel(
+    lnd_host: String,
+    lnd_port: u32,
+    lnd_tls_cert_path: String,
+) -> Result<MyChannel, Box<dyn std::error::Error>> {
+    let lnd_address = format!("https://{}:{}", lnd_host, lnd_port).to_string();
+    let pem = tokio::fs::read(lnd_tls_cert_path).await.ok();
+    let uri = lnd_address.parse::<Uri>().unwrap();
+    Ok(MyChannel::new(pem, uri).await?)
+}
+
+async fn get_macaroon_interceptor(
+    lnd_macaroon_path: String,
+) -> Result<MacaroonInterceptor, Box<dyn std::error::Error>> {
+    // TODO: don't use unwrap.
+    let macaroon = load_macaroon(lnd_macaroon_path).await.unwrap();
+    Ok(MacaroonInterceptor { macaroon })
+}
+
+pub async fn connect_lightning(
     lnd_host: String,
     lnd_port: u32,
     lnd_tls_cert_path: String,
     lnd_macaroon_path: String,
-) -> Result<LndClient, Box<dyn std::error::Error>> {
-    let lnd_address = format!("https://{}:{}", lnd_host, lnd_port).to_string();
-
-    let pem = tokio::fs::read(lnd_tls_cert_path).await.ok();
-    let uri = lnd_address.parse::<Uri>().unwrap();
-    let channel = MyChannel::new(pem, uri).await?;
-
-    // TODO: don't use unwrap.
-    let macaroon = load_macaroon(lnd_macaroon_path).await.unwrap();
-    let interceptor = MacaroonInterceptor { macaroon };
-
+) -> Result<LndLightningClient, Box<dyn std::error::Error>> {
+    let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
+    let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
     let client =
         crate::lnrpc::lightning_client::LightningClient::with_interceptor(channel, interceptor);
+    Ok(client)
+}
 
+pub async fn connect_invoices(
+    lnd_host: String,
+    lnd_port: u32,
+    lnd_tls_cert_path: String,
+    lnd_macaroon_path: String,
+) -> Result<LndInvoicesClient, Box<dyn std::error::Error>> {
+    let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
+    let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
+    let client =
+        crate::invoicesrpc::invoices_client::InvoicesClient::with_interceptor(channel, interceptor);
     Ok(client)
 }
 
