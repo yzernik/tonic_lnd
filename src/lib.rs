@@ -78,15 +78,24 @@ use tonic::body::BoxBody;
 use tonic_openssl::ALPN_H2_WIRE;
 use tower::Service;
 
-pub mod rpc {
-    tonic::include_proto!("lnrpc");
+pub mod lnrpc {
+    include!("lnrpc.rs");
+}
+
+pub mod invoicesrpc {
+    include!("invoicesrpc.rs");
+    // tonic::include_proto!("invoicesrpc");
 }
 
 /// [`tonic::Status`] is re-exported as `Error` for convenience.
 pub type LndClientError = tonic::Status;
 
 // /// This is a convenience type which you most likely want to use instead of raw client.
-pub type LndClient = rpc::lightning_client::LightningClient<
+pub type LndClient = crate::lnrpc::lightning_client::LightningClient<
+    tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
+>;
+
+pub type LndInvoicesClient = crate::invoicesrpc::invoices_client::InvoicesClient<
     tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
 >;
 
@@ -142,7 +151,8 @@ pub async fn connect(
     let macaroon = load_macaroon(lnd_macaroon_path).await.unwrap();
     let interceptor = MacaroonInterceptor { macaroon };
 
-    let client = rpc::lightning_client::LightningClient::with_interceptor(channel, interceptor);
+    let client =
+        crate::lnrpc::lightning_client::LightningClient::with_interceptor(channel, interceptor);
 
     Ok(client)
 }

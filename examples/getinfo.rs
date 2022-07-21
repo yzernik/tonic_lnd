@@ -32,7 +32,7 @@ async fn main() {
 
     let info = client
         // All calls require at least empty parameter
-        .get_info(tonic_openssl_lnd::rpc::GetInfoRequest {})
+        .get_info(tonic_openssl_lnd::lnrpc::GetInfoRequest {})
         .await
         .expect("failed to get info");
 
