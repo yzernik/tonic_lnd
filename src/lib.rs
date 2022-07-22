@@ -233,7 +233,8 @@ async fn get_channel(
     let lnd_address = format!("https://{}:{}", lnd_host, lnd_port).to_string();
     let pem = tokio::fs::read(lnd_tls_cert_path).await.ok();
     let uri = lnd_address.parse::<Uri>().unwrap();
-    Ok(MyChannel::new(pem, uri).await?)
+    let channel = MyChannel::new(pem, uri).await?;
+    Ok(channel)
 }
 
 async fn get_macaroon_interceptor(
