@@ -241,7 +241,6 @@ async fn get_channel(
 async fn get_macaroon_interceptor(
     lnd_macaroon_path: String,
 ) -> Result<MacaroonInterceptor, Box<dyn std::error::Error>> {
-    // TODO: don't use unwrap.
     let macaroon = load_macaroon(lnd_macaroon_path)
         .await
         .map_err(|e| ConnectError::from(e))?;
