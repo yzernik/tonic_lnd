@@ -64,6 +64,7 @@ Undetermined yet, please make suggestions.
 MITNFA
 "###]
 
+use crate::error::ConnectError;
 use error::InternalConnectError;
 use hyper::client::connect::HttpConnector;
 use hyper::{client::ResponseFuture, Body, Client, Request, Response, Uri};
@@ -241,7 +242,9 @@ async fn get_macaroon_interceptor(
     lnd_macaroon_path: String,
 ) -> Result<MacaroonInterceptor, Box<dyn std::error::Error>> {
     // TODO: don't use unwrap.
-    let macaroon = load_macaroon(lnd_macaroon_path).await.unwrap();
+    let macaroon = load_macaroon(lnd_macaroon_path)
+        .await
+        .map_err(|e| ConnectError::from(e))?;
     Ok(MacaroonInterceptor { macaroon })
 }
 
