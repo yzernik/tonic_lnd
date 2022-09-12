@@ -19,6 +19,8 @@ fn main() -> std::io::Result<()> {
         "devrpc/dev.proto",
         "invoicesrpc/invoices.proto",
         "lightning.proto",
+        "stateservice.proto",
+        "walletunlocker.proto",
         "lnclipb/lncli.proto",
         "neutrinorpc/neutrino.proto",
         "peersrpc/peers.proto",
