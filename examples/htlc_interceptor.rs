@@ -4,7 +4,7 @@
 /// - Create channels between Alice and Carol, and between Alice and Bob.
 /// - Create an invoice from Carol. Use the `decodepayreq` and `lookupinvoice` lncli commands to get preimage associated with Carol's invoice
 /// - Run this program with Alice's LND credentials, and the preimage from step above. For instance:
-///   `cargo run --example subscribe_htlcs 127.0.0.1 10003 /Users/justin/.polar/networks/2/volumes/lnd/alice/tls.cert /Users/justin/.polar/networks/2/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon <preimage>`
+///   `cargo run --example htlc_interceptor 127.0.0.1 10003 /Users/justin/.polar/networks/2/volumes/lnd/alice/tls.cert /Users/justin/.polar/networks/2/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon <preimage>`
 /// - Have Bob pay the invoice via Polar UI
 /// - This program should output HTLC information. Polar should print success message.
 ///
