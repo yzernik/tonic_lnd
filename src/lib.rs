@@ -158,6 +158,14 @@ pub type LndLightningClient = crate::lnrpc::lightning_client::LightningClient<
     tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
 >;
 
+pub type LndStateClient = crate::lnrpc::state_client::StateClient<
+    tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
+>;
+
+pub type LndWalletUnlockerClient = crate::lnrpc::wallet_unlocker_client::WalletUnlockerClient<
+    tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
+>;
+
 pub type LndNeutrinoClient = crate::neutrinorpc::neutrino_kit_client::NeutrinoKitClient<
     tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
 >;
@@ -314,6 +322,33 @@ pub async fn connect_lightning(
         crate::lnrpc::lightning_client::LightningClient::with_interceptor(channel, interceptor);
     Ok(client)
 }
+
+pub async fn connect_state(
+    lnd_host: String,
+    lnd_port: u32,
+    lnd_tls_cert_path: String,
+    lnd_macaroon_path: String,
+) -> Result<LndStateClient, Box<dyn std::error::Error>> {
+    let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
+    let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
+    let client =
+        crate::lnrpc::state_client::StateClient::with_interceptor(channel, interceptor);
+    Ok(client)
+}
+
+pub async fn connect_wallet_unlocker(
+    lnd_host: String,
+    lnd_port: u32,
+    lnd_tls_cert_path: String,
+    lnd_macaroon_path: String,
+) -> Result<LndWalletUnlockerClient, Box<dyn std::error::Error>> {
+    let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
+    let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
+    let client =
+        crate::lnrpc::wallet_unlocker_client::WalletUnlockerClient::with_interceptor(channel, interceptor);
+    Ok(client)
+}
+
 
 pub async fn connect_neutrino(
     lnd_host: String,
