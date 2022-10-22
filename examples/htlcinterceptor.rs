@@ -1,9 +1,13 @@
-use futures_util::stream;
-use rand::rngs::ThreadRng;
-use rand::Rng;
-
-// This program connects to LND and prints out intercepted htlc's.
-// This program accepts four arguments: host, port, cert file, macaroon file
+///
+/// To use this demo:
+/// - create a 3 node network in polar (https://lightningpolar.com/) -- Alice, Bob and Carol
+/// - Create channels between Alice and Carol, and between Alice and Bob.
+/// - Create an invoice from Carol. Use the `decodepayreq` and `lookupinvoice` lncli commands to get preimage associated with Carol's invoice
+/// - Run this program with Alice's LND credentials, and the preimage from step above. For instance:
+///   `cargo run --example subscribe_htlcs 127.0.0.1 10003 /Users/justin/.polar/networks/2/volumes/lnd/alice/tls.cert /Users/justin/.polar/networks/2/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon <preimage>`
+/// - Have Bob pay the invoice via Polar UI
+/// - This program should output HTLC information. Polar should print success message.
+///
 
 #[tokio::main]
 async fn main() {
@@ -11,14 +15,17 @@ async fn main() {
     args.next().expect("not even zeroth arg given");
     let host = args
         .next()
-        .expect("missing arguments: host, port, cert file, macaroon file");
+        .expect("missing arguments: host, port, cert file, macaroon file, preimage");
     let port = args
         .next()
-        .expect("missing arguments: port, cert file, macaroon file");
+        .expect("missing arguments: port, cert file, macaroon file, preimage");
     let cert_file = args
         .next()
-        .expect("missing arguments: cert file, macaroon file");
-    let macaroon_file = args.next().expect("missing argument: macaroon file");
+        .expect("missing arguments: cert file, macaroon file, preimage");
+    let macaroon_file = args
+        .next()
+        .expect("missing arguments: macaroon file, preimage");
+    let preimage = args.next().expect("missing argument: preimage");
     let host: String = host.into_string().expect("host is not UTF-8");
     let port: u32 = port
         .into_string()
@@ -29,48 +36,37 @@ async fn main() {
     let macaroon_file: String = macaroon_file
         .into_string()
         .expect("macaroon_file is not UTF-8");
+    let preimage = hex::decode(preimage.into_string().expect("preimage is invalid UTF-8")).unwrap();
 
     // Connecting to LND requires only address, cert file, and macaroon file
     let mut client = tonic_openssl_lnd::connect_router(host, port, cert_file, macaroon_file)
         .await
         .expect("failed to connect");
 
-    let mut rng = rand::thread_rng();
-    let htlc_count: i32 = rng.gen_range(2..100);
+    let (tx, rx) = tokio::sync::mpsc::channel::<
+        tonic_openssl_lnd::routerrpc::ForwardHtlcInterceptResponse,
+    >(1024);
+    let stream = tokio_stream::wrappers::ReceiverStream::new(rx);
 
-    let mut htlcs = vec![];
-    for _ in 0..=htlc_count {
-        htlcs.push(random_htlc(&mut rng))
-    }
-
-    let mut intercept_stream = client
-        .htlc_interceptor(stream::iter(htlcs))
+    let mut htlc_stream = client
+        .htlc_interceptor(stream)
         .await
-        .expect("Failed to call htlc_interceptor")
+        .expect("Failed to call subscribe_invoices")
         .into_inner();
 
-    while let Some(intercept) = intercept_stream
+    while let Some(htlc) = htlc_stream
         .message()
         .await
-        .expect("Failed to receive intercepts")
+        .expect("Failed to receive invoices")
     {
-        println!("{:?}", intercept);
-    }
-}
-
-fn random_htlc(rng: &mut ThreadRng) -> tonic_openssl_lnd::routerrpc::ForwardHtlcInterceptResponse {
-    let chan_id = (rng.gen_range(0..180) - 90) * 10_000_000;
-    let htlc_id = (rng.gen_range(0..360) - 180) * 10_000_000;
-    let circuit_key = tonic_openssl_lnd::routerrpc::CircuitKey {
-        chan_id: chan_id,
-        htlc_id: htlc_id,
-    };
-    let preimage = vec![0; 32];
-
-    tonic_openssl_lnd::routerrpc::ForwardHtlcInterceptResponse {
-        incoming_circuit_key: Some(circuit_key),
-        action: tonic_openssl_lnd::routerrpc::ResolveHoldForwardAction::Settle.into(),
-        preimage: preimage,
-        ..Default::default()
+        println!("htlc {:?}", htlc);
+        let response = tonic_openssl_lnd::routerrpc::ForwardHtlcInterceptResponse {
+            incoming_circuit_key: htlc.incoming_circuit_key,
+            action: 0,                  // this will claim the htlc
+            preimage: preimage.clone(), // this would be for a real preimage
+            failure_code: 0,
+            failure_message: vec![],
+        };
+        tx.send(response).await.unwrap();
     }
 }
