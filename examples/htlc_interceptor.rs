@@ -51,13 +51,13 @@ async fn main() {
     let mut htlc_stream = client
         .htlc_interceptor(stream)
         .await
-        .expect("Failed to call subscribe_invoices")
+        .expect("Failed to call htlc_interceptor")
         .into_inner();
 
     while let Some(htlc) = htlc_stream
         .message()
         .await
-        .expect("Failed to receive invoices")
+        .expect("Failed to receive htlcs")
     {
         println!("htlc {:?}", htlc);
         let response = tonic_openssl_lnd::routerrpc::ForwardHtlcInterceptResponse {
