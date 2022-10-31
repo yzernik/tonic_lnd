@@ -198,6 +198,86 @@ pub type LndWtcClient = crate::wtclientrpc::watchtower_client_client::Watchtower
     tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
 >;
 
+pub struct LndClient {
+    autopilot: LndAutopilotClient,
+    chain: LndChainClient,
+    dev: LndDevClient,
+    invoices: LndInvoicesClient,
+    lightning: LndLightningClient,
+    state: LndStateClient,
+    wallet_unlocker: LndWalletUnlockerClient,
+    neutrino: LndNeutrinoClient,
+    peers: LndPeersClient,
+    router: LndRouterClient,
+    signer: LndSignerClient,
+    versioner: LndVersionerClient,
+    wallet: LndWalletClient,
+    watchtower: LndWatchtowerClient,
+    wtc: LndWtcClient,
+}
+
+impl LndClient {
+    pub fn autopilot(&mut self) -> &mut LndAutopilotClient {
+        &mut self.autopilot
+    }
+
+    pub fn chain(&mut self) -> &mut LndChainClient {
+        &mut self.chain
+    }
+
+    pub fn dev(&mut self) -> &mut LndDevClient {
+        &mut self.dev
+    }
+
+    pub fn invoices(&mut self) -> &mut LndInvoicesClient {
+        &mut self.invoices
+    }
+
+    pub fn lightning(&mut self) -> &mut LndLightningClient {
+        &mut self.lightning
+    }
+
+    pub fn state(&mut self) -> &mut LndStateClient {
+        &mut self.state
+    }
+
+    pub fn wallet_unlocker(&mut self) -> &mut LndWalletUnlockerClient {
+        &mut self.wallet_unlocker
+    }
+
+    pub fn neutrino(&mut self) -> &mut LndNeutrinoClient {
+        &mut self.neutrino
+    }
+
+    pub fn peers(&mut self) -> &mut LndPeersClient {
+        &mut self.peers
+    }
+
+    pub fn router(&mut self) -> &mut LndRouterClient {
+        &mut self.router
+    }
+
+    pub fn signer(&mut self) -> &mut LndSignerClient {
+        &mut self.signer
+    }
+
+    pub fn versioner(&mut self) -> &mut LndVersionerClient {
+        &mut self.versioner
+    }
+
+    pub fn wallet(&mut self) -> &mut LndWalletClient {
+        &mut self.wallet
+    }
+
+    pub fn watchtower(&mut self) -> &mut LndWatchtowerClient {
+        &mut self.watchtower
+    }
+
+    pub fn wtc(&mut self) -> &mut LndWtcClient {
+        &mut self.wtc
+    }
+}
+
 mod error;
 
 /// Supplies requests with macaroon
@@ -255,6 +335,81 @@ async fn get_macaroon_interceptor(
     Ok(MacaroonInterceptor { macaroon })
 }
 
+pub async fn connect(
+    lnd_host: String,
+    lnd_port: u32,
+    lnd_tls_cert_path: String,
+    lnd_macaroon_path: String,
+) -> Result<LndClient, Box<dyn std::error::Error>> {
+    let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
+    let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
+    let client = LndClient {
+        autopilot: crate::autopilotrpc::autopilot_client::AutopilotClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        chain: crate::chainrpc::chain_notifier_client::ChainNotifierClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        dev: crate::devrpc::dev_client::DevClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        invoices: crate::invoicesrpc::invoices_client::InvoicesClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        lightning: crate::lnrpc::lightning_client::LightningClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        state: crate::lnrpc::state_client::StateClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        wallet_unlocker:
+            crate::lnrpc::wallet_unlocker_client::WalletUnlockerClient::with_interceptor(
+                channel.clone(),
+                interceptor.clone(),
+            ),
+        neutrino: crate::neutrinorpc::neutrino_kit_client::NeutrinoKitClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        peers: crate::peersrpc::peers_client::PeersClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        router: crate::routerrpc::router_client::RouterClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        signer: crate::signrpc::signer_client::SignerClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        versioner: crate::verrpc::versioner_client::VersionerClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        wallet: crate::walletrpc::wallet_kit_client::WalletKitClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        watchtower: crate::watchtowerrpc::watchtower_client::WatchtowerClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+        wtc: crate::wtclientrpc::watchtower_client_client::WatchtowerClientClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        ),
+    };
+    Ok(client)
+}
+
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_autopilot(
     lnd_host: String,
     lnd_port: u32,
@@ -270,6 +425,7 @@ pub async fn connect_autopilot(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_chain_notifier(
     lnd_host: String,
     lnd_port: u32,
@@ -285,6 +441,7 @@ pub async fn connect_chain_notifier(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_dev(
     lnd_host: String,
     lnd_port: u32,
@@ -297,6 +454,7 @@ pub async fn connect_dev(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_invoices(
     lnd_host: String,
     lnd_port: u32,
@@ -310,6 +468,7 @@ pub async fn connect_invoices(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_lightning(
     lnd_host: String,
     lnd_port: u32,
@@ -323,6 +482,7 @@ pub async fn connect_lightning(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_state(
     lnd_host: String,
     lnd_port: u32,
@@ -331,11 +491,11 @@ pub async fn connect_state(
 ) -> Result<LndStateClient, Box<dyn std::error::Error>> {
     let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
     let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
-    let client =
-        crate::lnrpc::state_client::StateClient::with_interceptor(channel, interceptor);
+    let client = crate::lnrpc::state_client::StateClient::with_interceptor(channel, interceptor);
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_wallet_unlocker(
     lnd_host: String,
     lnd_port: u32,
@@ -344,12 +504,14 @@ pub async fn connect_wallet_unlocker(
 ) -> Result<LndWalletUnlockerClient, Box<dyn std::error::Error>> {
     let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
     let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
-    let client =
-        crate::lnrpc::wallet_unlocker_client::WalletUnlockerClient::with_interceptor(channel, interceptor);
+    let client = crate::lnrpc::wallet_unlocker_client::WalletUnlockerClient::with_interceptor(
+        channel,
+        interceptor,
+    );
     Ok(client)
 }
 
-
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_neutrino(
     lnd_host: String,
     lnd_port: u32,
@@ -365,6 +527,7 @@ pub async fn connect_neutrino(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_peers(
     lnd_host: String,
     lnd_port: u32,
@@ -377,6 +540,7 @@ pub async fn connect_peers(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_router(
     lnd_host: String,
     lnd_port: u32,
@@ -390,6 +554,7 @@ pub async fn connect_router(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_signer(
     lnd_host: String,
     lnd_port: u32,
@@ -403,6 +568,7 @@ pub async fn connect_signer(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_versioner(
     lnd_host: String,
     lnd_port: u32,
@@ -416,6 +582,7 @@ pub async fn connect_versioner(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_wallet(
     lnd_host: String,
     lnd_port: u32,
@@ -431,6 +598,7 @@ pub async fn connect_wallet(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_watchtower(
     lnd_host: String,
     lnd_port: u32,
@@ -446,6 +614,7 @@ pub async fn connect_watchtower(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_wtc(
     lnd_host: String,
     lnd_port: u32,
