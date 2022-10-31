@@ -2,15 +2,13 @@ use std::path::PathBuf;
 
 fn main() -> std::io::Result<()> {
     println!("cargo:rerun-if-env-changed=LND_REPO_DIR");
-    let lnd_rpc_dir_owned;
     let dir = match std::env::var_os("LND_REPO_DIR") {
         Some(lnd_repo_path) => {
             let mut lnd_rpc_dir = PathBuf::from(lnd_repo_path);
             lnd_rpc_dir.push("lnrpc");
-            lnd_rpc_dir_owned = lnd_rpc_dir;
-            lnd_rpc_dir_owned.display().to_string()
+            lnd_rpc_dir
         }
-        None => "vendor".to_string(),
+        None => PathBuf::from("vendor"),
     };
 
     let protos = vec![
