@@ -409,6 +409,7 @@ pub async fn connect(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_autopilot(
     lnd_host: String,
     lnd_port: u32,
@@ -424,6 +425,7 @@ pub async fn connect_autopilot(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_chain_notifier(
     lnd_host: String,
     lnd_port: u32,
@@ -439,6 +441,7 @@ pub async fn connect_chain_notifier(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_dev(
     lnd_host: String,
     lnd_port: u32,
@@ -451,6 +454,7 @@ pub async fn connect_dev(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_invoices(
     lnd_host: String,
     lnd_port: u32,
@@ -464,6 +468,7 @@ pub async fn connect_invoices(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_lightning(
     lnd_host: String,
     lnd_port: u32,
@@ -477,6 +482,7 @@ pub async fn connect_lightning(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_state(
     lnd_host: String,
     lnd_port: u32,
@@ -489,6 +495,7 @@ pub async fn connect_state(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_wallet_unlocker(
     lnd_host: String,
     lnd_port: u32,
@@ -504,6 +511,7 @@ pub async fn connect_wallet_unlocker(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_neutrino(
     lnd_host: String,
     lnd_port: u32,
@@ -519,6 +527,7 @@ pub async fn connect_neutrino(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_peers(
     lnd_host: String,
     lnd_port: u32,
@@ -531,6 +540,7 @@ pub async fn connect_peers(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_router(
     lnd_host: String,
     lnd_port: u32,
@@ -544,6 +554,7 @@ pub async fn connect_router(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_signer(
     lnd_host: String,
     lnd_port: u32,
@@ -557,6 +568,7 @@ pub async fn connect_signer(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_versioner(
     lnd_host: String,
     lnd_port: u32,
@@ -570,6 +582,7 @@ pub async fn connect_versioner(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_wallet(
     lnd_host: String,
     lnd_port: u32,
@@ -585,6 +598,7 @@ pub async fn connect_wallet(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_watchtower(
     lnd_host: String,
     lnd_port: u32,
@@ -600,6 +614,7 @@ pub async fn connect_watchtower(
     Ok(client)
 }
 
+#[deprecated(since = "0.2.0", note = "Users should instead use connect")]
 pub async fn connect_wtc(
     lnd_host: String,
     lnd_port: u32,

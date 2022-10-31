@@ -1,6 +1,6 @@
 # Tonic LND client
 
-Rust implementation of LND RPC client using async GRPC library `tonic`.
+Rust implementation of LND RPC client using async gRPC library `tonic_openssl`.
 
 ## About
 
@@ -9,17 +9,17 @@ Review it before using with mainnet funds!**
 
 This crate implements LND GRPC using [`tonic`](https://docs.rs/tonic/) and [`prost`](https://docs.rs/prost/).
 Apart from being up-to-date at the time of writing (:D) it also allows `async` usage.
-It contains vendored `lightning.proto` file so LND source code is not *required*
-but accepts an environment variable `LND_REPO_DIR` which overrides the vendored `lightning.proto` file.
+It contains vendored `*.proto` files so LND source code is not *required*
+but accepts an environment variable `LND_REPO_DIR` which overrides the vendored `*.proto` files.
 This can be used to test new features in non-released `lnd`.
 (Actually, the motivating project using this library was that case. :))
 
 ## Usage
 
 There's no setup needed beyond adding the crate to your `Cargo.toml`.
-If you need to change the `lightning.proto` input set the environment variable `LND_REPO_DIR` to the directory with cloned `lnd` during build.
+If you need to change the `*.proto` files from which the client is generated, set the environment variable `LND_REPO_DIR` to a directory with cloned [`lnd`](https://github.com/lightningnetwork/lnd.git) during build.
 
-Here's an example of retrieving information from LND (`getinfo` call).
+Here's an example of retrieving information from LND (`[getinfo](https://api.lightning.community/#getinfo)` call).
 You can find the same example in crate root for your convenience.
 
 ```rust
@@ -51,11 +51,12 @@ async fn main() {
         .expect("macaroon_file is not UTF-8");
 
     // Connecting to LND requires only host, port, cert file, macaroon file
-    let mut client = tonic_openssl_lnd::connect_lightning(host, port, cert_file, macaroon_file)
+    let mut client = tonic_openssl_lnd::connect(host, port, cert_file, macaroon_file)
         .await
         .expect("failed to connect");
 
     let info = client
+        .lightning()
         // All calls require at least empty parameter
         .get_info(tonic_openssl_lnd::lnrpc::GetInfoRequest {})
         .await

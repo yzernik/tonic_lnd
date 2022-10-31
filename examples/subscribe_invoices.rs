@@ -27,11 +27,12 @@ async fn main() {
         .expect("macaroon_file is not UTF-8");
 
     // Connecting to LND requires only address, cert file, and macaroon file
-    let mut client = tonic_openssl_lnd::connect_lightning(host, port, cert_file, macaroon_file)
+    let mut client = tonic_openssl_lnd::connect(host, port, cert_file, macaroon_file)
         .await
         .expect("failed to connect");
 
     let mut invoice_stream = client
+        .lightning()
         .subscribe_invoices(tonic_openssl_lnd::lnrpc::InvoiceSubscription {
             add_index: 0,
             settle_index: 0,

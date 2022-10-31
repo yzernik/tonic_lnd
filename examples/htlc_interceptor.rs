@@ -39,7 +39,7 @@ async fn main() {
     let preimage = hex::decode(preimage.into_string().expect("preimage is invalid UTF-8")).unwrap();
 
     // Connecting to LND requires only address, cert file, and macaroon file
-    let mut client = tonic_openssl_lnd::connect_router(host, port, cert_file, macaroon_file)
+    let mut client = tonic_openssl_lnd::connect(host, port, cert_file, macaroon_file)
         .await
         .expect("failed to connect");
 
@@ -49,6 +49,7 @@ async fn main() {
     let stream = tokio_stream::wrappers::ReceiverStream::new(rx);
 
     let mut htlc_stream = client
+        .router()
         .htlc_interceptor(stream)
         .await
         .expect("Failed to call htlc_interceptor")
