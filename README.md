@@ -7,7 +7,7 @@ Rust implementation of LND RPC client using async gRPC library `tonic_openssl`.
 **Warning: this crate is in early development and may have unknown problems!
 Review it before using with mainnet funds!**
 
-This crate implements LND GRPC using [`tonic`](https://docs.rs/tonic/) and [`prost`](https://docs.rs/prost/).
+This crate implements LND GRPC using [`tonic_openssl`](https://docs.rs/tonic-openssl/latest/tonic_openssl/) and [`prost`](https://docs.rs/prost/).
 Apart from being up-to-date at the time of writing (:D) it also allows `async` usage.
 It contains vendored `*.proto` files so LND source code is not *required*
 but accepts an environment variable `LND_REPO_DIR` which overrides the vendored `*.proto` files.
@@ -67,10 +67,6 @@ async fn main() {
     println!("{:#?}", info);
 }
 ```
-
-## MSRV
-
-1.48.0
 
 ## License
 
