@@ -198,6 +198,8 @@ pub type LndWtcClient = crate::wtclientrpc::watchtower_client_client::Watchtower
     tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
 >;
 
+
+#[derive(Clone)]
 pub struct LndClient {
     autopilot: LndAutopilotClient,
     chain: LndChainClient,
