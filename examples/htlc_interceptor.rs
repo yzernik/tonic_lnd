@@ -39,12 +39,12 @@ async fn main() {
     let preimage = hex::decode(preimage.into_string().expect("preimage is invalid UTF-8")).unwrap();
 
     // Connecting to LND requires only address, cert file, and macaroon file
-    let mut client = tonic_openssl_lnd::connect(host, port, cert_file, macaroon_file)
+    let mut client = lnd_grpc_rust::connect(host, port, cert_file, macaroon_file)
         .await
         .expect("failed to connect");
 
     let (tx, rx) = tokio::sync::mpsc::channel::<
-        tonic_openssl_lnd::routerrpc::ForwardHtlcInterceptResponse,
+        lnd_grpc_rust::routerrpc::ForwardHtlcInterceptResponse,
     >(1024);
     let stream = tokio_stream::wrappers::ReceiverStream::new(rx);
 
@@ -61,7 +61,7 @@ async fn main() {
         .expect("Failed to receive htlcs")
     {
         println!("htlc {:?}", htlc);
-        let response = tonic_openssl_lnd::routerrpc::ForwardHtlcInterceptResponse {
+        let response = lnd_grpc_rust::routerrpc::ForwardHtlcInterceptResponse {
             incoming_circuit_key: htlc.incoming_circuit_key,
             action: 0,                  // this will claim the htlc
             preimage: preimage.clone(), // this would be for a real preimage
