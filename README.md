@@ -1,4 +1,4 @@
-# Tonic LND client
+# LND gRPC Client in Rust.
 
 Rust implementation of LND RPC client using async gRPC library `tonic_openssl`.
 
