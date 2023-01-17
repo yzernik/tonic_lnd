@@ -9,7 +9,7 @@ repository = "https://github.com/niteshbalusu11/lnd_grpc_rust"
 readme = "README.md"
 keywords = ["LND", "rpc", "grpc", "tonic", "async"]
 categories = ["api-bindings", "asynchronous", "cryptography::cryptocurrencies", "network-programming"]
-license = "MITNFA"
+license = "MIT"
 
 [lib]
 doctest = false
