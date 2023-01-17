@@ -1,5 +1,3 @@
-use crate::error::ConnectError;
-use error::InternalConnectError;
 use hyper::client::connect::HttpConnector;
 use hyper::{client::ResponseFuture, Body, Client, Request, Response, Uri};
 use hyper_openssl::HttpsConnector;
@@ -7,7 +5,6 @@ use openssl::{
     ssl::{SslConnector, SslMethod},
     x509::X509,
 };
-use std::path::{Path, PathBuf};
 use std::{error::Error, task::Poll};
 use tonic::body::BoxBody;
 use tonic_openssl::ALPN_H2_WIRE;
@@ -212,8 +209,6 @@ impl LndClient {
     }
 }
 
-mod error;
-
 /// Supplies requests with macaroon
 #[derive(Clone)]
 pub struct MacaroonInterceptor {
@@ -235,48 +230,24 @@ impl tonic::service::Interceptor for MacaroonInterceptor {
     }
 }
 
-async fn load_macaroon(
-    path: impl AsRef<Path> + Into<PathBuf>,
-) -> Result<String, InternalConnectError> {
-    let macaroon =
-        tokio::fs::read(&path)
-            .await
-            .map_err(|error| InternalConnectError::ReadFile {
-                file: path.into(),
-                error,
-            })?;
-    Ok(hex::encode(&macaroon))
-}
-
 async fn get_channel(
-    lnd_host: String,
-    lnd_port: u32,
-    lnd_tls_cert_path: String,
+    cert: String,
+    socket: String,
 ) -> Result<MyChannel, Box<dyn std::error::Error>> {
-    let lnd_address = format!("https://{}:{}", lnd_host, lnd_port).to_string();
-    let pem = tokio::fs::read(lnd_tls_cert_path).await.ok();
+    let lnd_address = format!("https://{}", socket).to_string();
+    let pem = hex::decode(cert).expect("FailedToDecodeTlsCert");
     let uri = lnd_address.parse::<Uri>().unwrap();
-    let channel = MyChannel::new(pem, uri).await?;
+    let channel = MyChannel::new(Some(pem), uri).await?;
     Ok(channel)
 }
 
-async fn get_macaroon_interceptor(
-    lnd_macaroon_path: String,
-) -> Result<MacaroonInterceptor, Box<dyn std::error::Error>> {
-    let macaroon = load_macaroon(lnd_macaroon_path)
-        .await
-        .map_err(|e| ConnectError::from(e))?;
-    Ok(MacaroonInterceptor { macaroon })
-}
-
 pub async fn connect(
-    lnd_host: String,
-    lnd_port: u32,
-    lnd_tls_cert_path: String,
-    lnd_macaroon_path: String,
+    cert: String,
+    macaroon: String,
+    socket: String,
 ) -> Result<LndClient, Box<dyn std::error::Error>> {
-    let channel = get_channel(lnd_host, lnd_port, lnd_tls_cert_path).await?;
-    let interceptor = get_macaroon_interceptor(lnd_macaroon_path).await?;
+    let channel = get_channel(cert, socket).await?;
+    let interceptor = MacaroonInterceptor {macaroon};
     let client = LndClient {
         autopilot: crate::autopilotrpc::autopilot_client::AutopilotClient::with_interceptor(
             channel.clone(),

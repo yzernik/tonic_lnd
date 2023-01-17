@@ -2,34 +2,22 @@
 // `lncli getinfo`.
 //
 // This program accepts four arguments: host, port, cert file, macaroon file
+use std::fs;
 
 #[tokio::main]
 async fn main() {
-    let mut args = std::env::args_os();
-    args.next().expect("not even zeroth arg given");
-    let host = args
-        .next()
-        .expect("missing arguments: host, port, cert file, macaroon file");
-    let port = args
-        .next()
-        .expect("missing arguments: port, cert file, macaroon file");
-    let cert_file = args
-        .next()
-        .expect("missing arguments: cert file, macaroon file");
-    let macaroon_file = args.next().expect("missing argument: macaroon file");
-    let host: String = host.into_string().expect("host is not UTF-8");
-    let port: u32 = port
-        .into_string()
-        .expect("port is not UTF-8")
-        .parse()
-        .expect("port is not u32");
-    let cert_file: String = cert_file.into_string().expect("cert_file is not UTF-8");
-    let macaroon_file: String = macaroon_file
-        .into_string()
-        .expect("macaroon_file is not UTF-8");
-
-    // Connecting to LND requires only host, port, cert file, macaroon file
-    let mut client = lnd_grpc_rust::connect(host, port, cert_file, macaroon_file)
+        // Read the contents of the file into a vector of bytes
+        let cert_bytes = fs::read("path/to/tlscert").expect("FailedToReadTlsCertFile");
+        let mac_bytes = fs::read("path/to/macaroon").expect("FailedToReadMacaroonFile");
+    
+    
+            // Convert the bytes to a hex string
+        let cert = buffer_as_hex(cert_bytes);
+        let macaroon = buffer_as_hex(mac_bytes);
+    
+        let socket = "localhost:10001".to_string();
+    
+        let mut client = lnd_grpc_rust::connect(cert, macaroon, socket)
         .await
         .expect("failed to connect");
 
@@ -43,4 +31,10 @@ async fn main() {
     // We only print it here, note that in real-life code you may want to call `.into_inner()` on
     // the response to get the message.
     println!("{:#?}", info);
+}
+
+fn buffer_as_hex(bytes: Vec<u8>) -> String {
+    let hex_str = bytes.iter().map(|b| format!("{:02x}", b)).collect::<String>();
+
+    return hex_str;
 }

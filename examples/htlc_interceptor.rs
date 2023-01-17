@@ -1,3 +1,5 @@
+use std::fs;
+
 ///
 /// To use this demo:
 /// - create a 3 node network in polar (https://lightningpolar.com/) -- Alice, Bob and Carol
@@ -13,35 +15,25 @@
 async fn main() {
     let mut args = std::env::args_os();
     args.next().expect("not even zeroth arg given");
-    let host = args
-        .next()
-        .expect("missing arguments: host, port, cert file, macaroon file, preimage");
-    let port = args
-        .next()
-        .expect("missing arguments: port, cert file, macaroon file, preimage");
-    let cert_file = args
-        .next()
-        .expect("missing arguments: cert file, macaroon file, preimage");
-    let macaroon_file = args
-        .next()
-        .expect("missing arguments: macaroon file, preimage");
+
+    // Read the contents of the file into a vector of bytes
+    let cert_bytes = fs::read("path/to/tlscert").expect("FailedToReadTlsCertFile");
+    let mac_bytes = fs::read("path/to/macaroon").expect("FailedToReadMacaroonFile");
+        
+        
+                // Convert the bytes to a hex string
+    let cert = buffer_as_hex(cert_bytes);
+    let macaroon = buffer_as_hex(mac_bytes);
+        
+    let socket = "localhost:10001".to_string();
+
     let preimage = args.next().expect("missing argument: preimage");
-    let host: String = host.into_string().expect("host is not UTF-8");
-    let port: u32 = port
-        .into_string()
-        .expect("port is not UTF-8")
-        .parse()
-        .expect("port is not u32");
-    let cert_file: String = cert_file.into_string().expect("cert_file is not UTF-8");
-    let macaroon_file: String = macaroon_file
-        .into_string()
-        .expect("macaroon_file is not UTF-8");
+
     let preimage = hex::decode(preimage.into_string().expect("preimage is invalid UTF-8")).unwrap();
 
-    // Connecting to LND requires only address, cert file, and macaroon file
-    let mut client = lnd_grpc_rust::connect(host, port, cert_file, macaroon_file)
-        .await
-        .expect("failed to connect");
+    let mut client = lnd_grpc_rust::connect(cert, macaroon, socket)
+    .await
+    .expect("failed to connect");
 
     let (tx, rx) = tokio::sync::mpsc::channel::<
         lnd_grpc_rust::routerrpc::ForwardHtlcInterceptResponse,
@@ -70,4 +62,10 @@ async fn main() {
         };
         tx.send(response).await.unwrap();
     }
+}
+
+fn buffer_as_hex(bytes: Vec<u8>) -> String {
+    let hex_str = bytes.iter().map(|b| format!("{:02x}", b)).collect::<String>();
+
+    return hex_str;
 }
