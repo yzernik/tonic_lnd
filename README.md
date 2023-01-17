@@ -2,6 +2,8 @@
 
 Rust implementation of LND RPC client using async gRPC library `tonic_openssl`.
 
+This is a fork from https://github.com/yzernik/tonic_openssl_lnd but uses hex credentials over paths to be able to connect to LND remotely without directly reading from macaroon and cert files.
+
 ## About
 
 **Warning: this crate is in early development and may have unknown problems!
