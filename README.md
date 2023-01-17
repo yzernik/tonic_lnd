@@ -65,4 +65,4 @@ fn buffer_as_hex(bytes: Vec<u8>) -> String {
 
 ## License
 
-MITNFA
+MIT
